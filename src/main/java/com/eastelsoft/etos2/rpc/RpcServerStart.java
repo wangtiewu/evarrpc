@@ -9,6 +9,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class RpcServerStart {
 	private static Logger logger = LoggerFactory.getLogger(RpcServerStart.class);
 	private static AbstractXmlApplicationContext context;
+	public static volatile boolean running = true;
 	
 	public static AbstractXmlApplicationContext getContext() {
 		return context;
@@ -22,6 +23,7 @@ public class RpcServerStart {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
 				logger.info("RpcServerStart shutdown");
+				running = false;
 				if (context != null) {
 					context.close();
 					context = null;

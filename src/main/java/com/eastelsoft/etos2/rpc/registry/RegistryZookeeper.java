@@ -16,11 +16,14 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache.StartMode;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.eastelsoft.etos2.rpc.RpcServerStart;
 import com.eastelsoft.etos2.rpc.tool.JacksonUtils;
 
 public class RegistryZookeeper implements Registry {
@@ -34,6 +37,7 @@ public class RegistryZookeeper implements Registry {
 	private AtomicLong rpcCalls = new AtomicLong();
 	private ConcurrentHashMap<String, PathChildrenCache> providerWatchers;
 	private ConcurrentHashMap<String, List<Provider>> allProviders;
+	private ConcurrentHashMap<String, Provider> localRegisteredProviders;
 
 	public void init() {
 		RetryPolicy retryPolicy = new ExponentialBackoffRetry(3000, 3);
@@ -43,6 +47,60 @@ public class RegistryZookeeper implements Registry {
 		client.start();
 		providerWatchers = new ConcurrentHashMap<String, PathChildrenCache>();
 		allProviders = new ConcurrentHashMap<String, List<Provider>>();
+		localRegisteredProviders = new ConcurrentHashMap<String, Provider>();
+		client.getConnectionStateListenable().addListener(
+				new ConnectionStateListener() {
+					@Override
+					public void stateChanged(CuratorFramework client,
+							ConnectionState newState) {
+						// TODO Auto-generated method stub
+						if (newState == ConnectionState.LOST) {
+							while (RpcServerStart.running) {
+								try {
+									if (client.getZookeeperClient()
+											.blockUntilConnectedOrTimedOut()) {
+										// re-register provider
+										Set<Map.Entry<String, Provider>> entrys = localRegisteredProviders
+												.entrySet();
+										for (Map.Entry<String, Provider> entry : entrys) {
+											try {
+												client.create()
+														.withMode(
+																CreateMode.EPHEMERAL)
+														.forPath(
+																entry.getKey(),
+																JacksonUtils
+																		.beanToJson(
+																				entry.getValue())
+																		.getBytes());
+												logger.info("Privider re-registered: "
+														+ JacksonUtils
+																.beanToJson(entry
+																		.getValue()));
+											} catch (Exception e) {
+												// TODO Auto-generated catch
+												// block
+												logger.error(
+														"re-register provider "
+																+ JacksonUtils
+																		.beanToJson(entry
+																				.getValue())
+																+ " fail :"
+																+ e.getMessage(),
+														e);
+											}
+										}
+										// clean allProviders
+										allProviders.clear();
+									}
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+						}
+					}
+				});
 	}
 
 	public void destroy() {
@@ -80,6 +138,7 @@ public class RegistryZookeeper implements Registry {
 			client.create()
 					.withMode(CreateMode.EPHEMERAL)
 					.forPath(path, JacksonUtils.beanToJson(provider).getBytes());
+			localRegisteredProviders.put(path, provider);
 			logger.info("Privider registered: "
 					+ JacksonUtils.beanToJson(provider));
 			return true;
@@ -97,6 +156,7 @@ public class RegistryZookeeper implements Registry {
 				+ NODE_PROVIDERS + "/" + provider.getServerAddress();
 		try {
 			client.delete().forPath(path);
+			localRegisteredProviders.remove(path);
 			logger.info("Provider unregistered: "
 					+ JacksonUtils.beanToJson(provider));
 
@@ -120,7 +180,7 @@ public class RegistryZookeeper implements Registry {
 			client.create()
 					.withMode(CreateMode.EPHEMERAL)
 					.forPath(path, JacksonUtils.beanToJson(consumer).getBytes());
-			logger.info("Privider registered: "
+			logger.info("Consumer registered: "
 					+ JacksonUtils.beanToJson(consumer));
 			// we try create watch providers
 			tryCreateProvidersWatch(consumer.getInterfaceName());
