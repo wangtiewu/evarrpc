@@ -198,7 +198,7 @@ public class RpcReference implements FactoryBean, InitializingBean,
 		AbstractXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "spring-bean-container-rpcclient.xml" });
 		final HelloWorld helloWorld = (HelloWorld) context.getBean("helloWorld");
 		long t1 = System.currentTimeMillis();
-		final int count = 500000;
+		final int count = 1000;
 		int threadCount = 8;
 		final CountDownLatch finished = new CountDownLatch(count * threadCount);
 		for (int k = 0; k < threadCount; k++) {

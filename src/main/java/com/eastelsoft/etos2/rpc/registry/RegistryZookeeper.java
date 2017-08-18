@@ -38,6 +38,7 @@ public class RegistryZookeeper implements Registry {
 	private ConcurrentHashMap<String, PathChildrenCache> providerWatchers;
 	private ConcurrentHashMap<String, List<Provider>> allProviders;
 	private ConcurrentHashMap<String, Provider> localRegisteredProviders;
+	private ConcurrentHashMap<String, Consumer> localRegisteredConsumers;
 
 	public void init() {
 		RetryPolicy retryPolicy = new ExponentialBackoffRetry(3000, 3);
@@ -48,6 +49,7 @@ public class RegistryZookeeper implements Registry {
 		providerWatchers = new ConcurrentHashMap<String, PathChildrenCache>();
 		allProviders = new ConcurrentHashMap<String, List<Provider>>();
 		localRegisteredProviders = new ConcurrentHashMap<String, Provider>();
+		localRegisteredConsumers = new ConcurrentHashMap<String, Consumer>();
 		client.getConnectionStateListenable().addListener(
 				new ConnectionStateListener() {
 					@Override
@@ -73,7 +75,7 @@ public class RegistryZookeeper implements Registry {
 																		.beanToJson(
 																				entry.getValue())
 																		.getBytes());
-												logger.info("Privider re-registered: "
+												logger.info("Provider re-registered: "
 														+ JacksonUtils
 																.beanToJson(entry
 																		.getValue()));
@@ -90,8 +92,40 @@ public class RegistryZookeeper implements Registry {
 														e);
 											}
 										}
+										// re-register conumser
+										Set<Map.Entry<String, Consumer>> conumerEntrys = localRegisteredConsumers
+												.entrySet();
+										for (Map.Entry<String, Consumer> entry : conumerEntrys) {
+											try {
+												client.create()
+														.withMode(
+																CreateMode.EPHEMERAL)
+														.forPath(
+																entry.getKey(),
+																JacksonUtils
+																		.beanToJson(
+																				entry.getValue())
+																		.getBytes());
+												logger.info("Consumer re-registered: "
+														+ JacksonUtils
+																.beanToJson(entry
+																		.getValue()));
+											} catch (Exception e) {
+												// TODO Auto-generated catch
+												// block
+												logger.error(
+														"re-register consumer "
+																+ JacksonUtils
+																		.beanToJson(entry
+																				.getValue())
+																+ " fail :"
+																+ e.getMessage(),
+														e);
+											}
+										}
 										// clean allProviders
 										allProviders.clear();
+										break;
 									}
 								} catch (InterruptedException e) {
 									// TODO Auto-generated catch block
@@ -180,6 +214,7 @@ public class RegistryZookeeper implements Registry {
 			client.create()
 					.withMode(CreateMode.EPHEMERAL)
 					.forPath(path, JacksonUtils.beanToJson(consumer).getBytes());
+			localRegisteredConsumers.put(path, consumer);
 			logger.info("Consumer registered: "
 					+ JacksonUtils.beanToJson(consumer));
 			// we try create watch providers
@@ -199,6 +234,7 @@ public class RegistryZookeeper implements Registry {
 				+ NODE_CONSUMES + "/" + consumer.getAddress();
 		try {
 			client.delete().forPath(path);
+			localRegisteredConsumers.remove(path);
 			logger.info("Sunsumer unregistered: "
 					+ JacksonUtils.beanToJson(consumer));
 
