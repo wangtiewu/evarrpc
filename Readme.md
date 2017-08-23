@@ -123,3 +123,6 @@ public static void main(String[] args) {
     // will print out "Hello World"
 }
 ```
+
+* protobuf use issue
+On Server and client machine,you need install google protobuf3,tested version is protobuf-3.4.0
