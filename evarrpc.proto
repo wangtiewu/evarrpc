@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package com.eastelsoft.etos2.rpc.serialize.protobuf;
+
+option java_package = "com.eastelsoft.etos2.rpc.serialize.protobuf";
+
+message RpcRequest {
+        string seq = 1;
+        string interfaceName = 2;
+        string method = 3;
+       	repeated bytes params = 4;
+}
+
+message RpcResponse {
+        string seq = 1;
+        string interfaceName = 2;
+        string method = 3;
+        string ecode = 4;
+        string emsg = 5;
+       	bytes data = 6;
+}

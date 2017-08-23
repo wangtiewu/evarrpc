@@ -29,6 +29,9 @@ public class RpcServer {
 		serializeClasses
 				.put(SerializeType.PROTOSTUFF.value(),
 						com.eastelsoft.etos2.rpc.serialize.protostuff.ProtostuffRpcReqSerialize.class);
+		serializeClasses
+				.put(SerializeType.PROTOBUF.value(),
+						com.eastelsoft.etos2.rpc.serialize.protobuf.ProtobufRpcReqSerialize.class);
 	}
 	EventLoopGroup boss = null;
 	EventLoopGroup worker = null;

@@ -258,7 +258,7 @@ public class RegistryZookeeper implements Registry {
 			for (String node : nodes) {
 				String providerJson = new String(client.getData().forPath(
 						path + "/" + node));
-				Provider provider = (Provider) JacksonUtils.json2Object(
+				Provider provider = (Provider) JacksonUtils.json2Bean(
 						providerJson, Provider.class);
 				providers.add(provider);
 			}
@@ -283,7 +283,7 @@ public class RegistryZookeeper implements Registry {
 			for (String node : nodes) {
 				String providerJson = new String(client.getData().forPath(
 						path + "/" + node));
-				Consumer consumer = (Consumer) JacksonUtils.json2Object(
+				Consumer consumer = (Consumer) JacksonUtils.json2Bean(
 						providerJson, Consumer.class);
 				consumers.add(consumer);
 			}
@@ -340,7 +340,7 @@ public class RegistryZookeeper implements Registry {
 				switch (event.getType()) {
 				case CHILD_ADDED: {
 					String providerJson = new String(data.getData());
-					Provider provider = (Provider) JacksonUtils.json2Object(
+					Provider provider = (Provider) JacksonUtils.json2Bean(
 							providerJson, Provider.class);
 					List<Provider> providers = allProviders.get(provider
 							.getInterfaceName());
@@ -359,7 +359,7 @@ public class RegistryZookeeper implements Registry {
 				}
 				case CHILD_REMOVED: {
 					String providerJson = new String(data.getData());
-					Provider provider = (Provider) JacksonUtils.json2Object(
+					Provider provider = (Provider) JacksonUtils.json2Bean(
 							providerJson, Provider.class);
 					List<Provider> providers = allProviders.get(provider
 							.getInterfaceName());
@@ -372,7 +372,7 @@ public class RegistryZookeeper implements Registry {
 				}
 				case CHILD_UPDATED:
 					String providerJson = new String(data.getData());
-					Provider provider = (Provider) JacksonUtils.json2Object(
+					Provider provider = (Provider) JacksonUtils.json2Bean(
 							providerJson, Provider.class);
 					List<Provider> providers = allProviders.get(provider
 							.getInterfaceName());

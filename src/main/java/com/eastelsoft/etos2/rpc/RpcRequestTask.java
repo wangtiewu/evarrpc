@@ -5,10 +5,13 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.commons.beanutils.MethodUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.eastelsoft.etos2.rpc.spring.RpcService;
 
 public class RpcRequestTask implements Runnable {
+	private static Logger logger = LoggerFactory.getLogger(RpcRequestTask.class);
 	private ChannelHandlerContext ctx;
 	private RpcRequest rpcRequest;
 
@@ -22,6 +25,8 @@ public class RpcRequestTask implements Runnable {
 		// TODO Auto-generated method stub
 		RpcResponse response = new RpcResponse();
 		response.setSeq(rpcRequest.getSeq());
+		response.setInterfaceName(rpcRequest.getInterfaceName());
+		response.setMethod(rpcRequest.getMethod());
 		try {
 			Object result = reflect(rpcRequest);
 			response.setData(result);
@@ -31,17 +36,9 @@ public class RpcRequestTask implements Runnable {
 			response.setEcode(ErrorCode.ECODE_SERVICE_EXCEPTION);
 			response.setEmsg(t.toString());
 			response.setCause(t);
-			t.printStackTrace();
-			System.err.printf("RPC Server invoke error!\n");
+			logger.error("RPC Server invoke error，"+t.getMessage(), t);
 		}
-
-		ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
-			public void operationComplete(ChannelFuture channelFuture)
-					throws Exception {
-				// System.out.println("RPC Server Send message-id respone:"
-				// + rpcRequest.getSeq());
-			}
-		});
+		ctx.writeAndFlush(response);
 	}
 
 	private Object reflect(RpcRequest request) throws Throwable {

@@ -5,18 +5,13 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-
-
-import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +19,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -33,10 +29,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * 类说明：jackson工具类
  */
 public class JacksonUtils {
-
 	private static final Logger logger = LoggerFactory
 			.getLogger(JacksonUtils.class);
-
 	private static String[] formats = new String[] { "yyyyMMddHHmmss",
 			"yyyyMMdd" };
 	private static ObjectMapper mapper = new ObjectMapper();
@@ -47,54 +41,105 @@ public class JacksonUtils {
 		mapper.setSerializationInclusion(Include.NON_NULL);
 	}
 
-	/**
-	 * 将Json格式的字符串转换成指定的对象返回 �?
-	 * 
-	 * @param jsonString
-	 *            Json格式的字符串 。如：{'guId':'1', 'name' : '张三'}
-	 * @param beanClass
-	 *            �?��转换的对象的Class对象�?
-	 * @return 转换后的对象
-	 */
-	public static Object json2Object(String jsonString, Class beanClass) {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.setDateFormat(new SimpleDateFormat(formats[0]));
+	public static <T> String bean2Json(T bean) {
 		try {
-			return mapper.readValue(jsonString, beanClass);
-		} catch (Exception e) {
+			return mapper.writeValueAsString(bean);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
 			logger.error(e.getMessage(), e);
-			return null;
 		}
+		return null;
 	}
 
-	/**
-	 * 将Json格式的字符串转换成指定对象组成的List返回�?
-	 * 
-	 * @param jsonString
-	 *            Json格式的字符串 。如：[{'guId':'1', 'name' : '张三'}, {'guId':'2',
-	 *            'name' : '李四'}]
-	 * @param beanClass
-	 *            �?��转换的对象的Class对象�?
-	 * @return List 指定对象组成的List�?
-	 */
-	public static List json2List(String jsonString, Class beanClass) {
-		mapper.setDateFormat(new SimpleDateFormat(formats[0]));
-		List result = new ArrayList();
+	public static String map2Json(Map map) {
 		try {
-			List<LinkedHashMap<String, Object>> list = mapper.readValue(
-					jsonString, new TypeReference<List>() {
-					});
-			for (int i = 0; i < list.size(); i++) {
-				LinkedHashMap<String, Object> map = list.get(i);
-				Object obj = beanClass.newInstance();
-				BeanUtils.populate(obj, map);
-				result.add(obj);
-			}
-			return result;
-		} catch (Exception e) {
+			return mapper.writeValueAsString(map);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
 			logger.error(e.getMessage(), e);
-			return new ArrayList();
 		}
+		return null;
+	}
+
+	public static String list2Json(List list) {
+		try {
+			return mapper.writeValueAsString(list);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage(), e);
+		}
+		return null;
+	}
+	
+	public static String ary2Json(Object[] ary) {
+		try {
+			return mapper.writeValueAsString(ary);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage(), e);
+		}
+		return null;
+	}
+
+	public static <T> T json2Bean(String json, Class<T> beanClass) {
+		try {
+			return mapper.readValue(json, beanClass);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage(), e);
+		}
+		return null;
+	}
+
+	public static <T> List<T> json2List(String json, Class<T> beanClass) {
+		try {
+			return (List<T>) mapper.readValue(json,
+					getCollectionType(List.class, beanClass));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage(), e);
+		}
+		return null;
+	}
+
+	public static Map json2Map(String json) {
+		try {
+			return (Map) mapper.readValue(json, Map.class);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage(), e);
+		}
+		return null;
+	}
+	
+	public static <T> T[] json2Ary(String json, Class<T> beanClass) {
+		try {
+			return listToArray(json2List(json, beanClass), beanClass);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage(), e);
+		}
+		return null;
+	}
+
+	
+	private static <T> T[] listToArray(List<T> src, Class<T> type) {
+		if (src == null || src.isEmpty()) {
+			return null;
+		}
+		// 初始化泛型数组
+		// JAVA中不允许这样初始化泛型数组： T[] dest = new T[src.size()];
+		T[] dest = (T[]) Array.newInstance(type, src.size());
+		for (int i = 0; i < src.size(); i++) {
+			dest[i] = src.get(i);
+		}
+		return (T[]) dest;
+	}
+	
+	private static JavaType getCollectionType(Class<?> collectionClass,
+			Class<?>... elementClasses) {
+		return mapper.getTypeFactory().constructParametricType(collectionClass,
+				elementClasses);
 	}
 
 	/**
@@ -204,28 +249,6 @@ public class JacksonUtils {
 			throw new RuntimeException("对象转json异常");
 		} catch (Exception e) {
 			throw new RuntimeException("对象转json异常");
-		}
-		return json.toString();
-	}
-
-	/**
-	 * 将一个List对象转换成Json数据格式返回
-	 * 
-	 * @param list
-	 *            �?��进行转换的List对象
-	 * @return 转换后的Json数据格式字符�?
-	 */
-	public static String listToJson(List<?> list) {
-		StringBuilder json = new StringBuilder();
-		json.append("[");
-		if (list != null && list.size() > 0) {
-			for (Object obj : list) {
-				json.append(objectToJson(obj));
-				json.append(",");
-			}
-			json.setCharAt(json.length() - 1, ']');
-		} else {
-			json.append("]");
 		}
 		return json.toString();
 	}

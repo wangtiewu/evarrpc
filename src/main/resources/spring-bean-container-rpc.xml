@@ -13,8 +13,8 @@
 
     <bean id="registry" class="com.eastelsoft.etos2.rpc.registry.RegistryZookeeper" init-method="init" destroy-method="destroy">
         <property name="servers">
-            <!--  <value>10.0.65.105:2181,10.0.65.105:2182,10.0.65.105:2183</value>  -->
-            <value>127.0.0.1:12181</value>
+            <value>10.0.65.105:2181,10.0.65.105:2182,10.0.65.105:2183</value>
+            <!-- <value>127.0.0.1:12181</value>  -->
         </property>
     </bean>
     
@@ -26,8 +26,8 @@
             <value>8888</value>
         </property>
         <property name="serializeType">
-            <!-- jdknative or protostuff -->
-            <value>protostuff</value>
+            <!-- jdknative or protostuff or protobuf -->
+            <value>protobuf</value>
         </property>
     </bean>
     
@@ -36,11 +36,5 @@
 
 	<bean id="helloWorldTarget" class="com.eastelsoft.etos2.rpc.example.HelloWorldImpl">
 	</bean>
-	<!-- <bean id="rpcStub" class="com.eastelsoft.etos2.sp.netty.rpc.RpcStub"> 
-		<property name="serverAddress"> <value>127.0.0.1:8888</value> </property> 
-		</bean> -->
-	<!-- <aop:config> <aop:pointcut expression="execution(* com.eastelsoft.etos2.sp.netty.rpc.HelloWorld.*(..))" 
-		id="helloWorld"></aop:pointcut> <aop:aspect ref="rpcStub"> <aop:around method="rpc" 
-		pointcut-ref="helloWorld"></aop:around> </aop:aspect> </aop:config> -->
 </beans>
 

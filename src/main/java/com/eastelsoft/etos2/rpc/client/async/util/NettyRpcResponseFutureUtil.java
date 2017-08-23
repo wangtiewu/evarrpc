@@ -5,13 +5,16 @@ import io.netty.util.AttributeKey;
 
 import java.net.InetSocketAddress;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.eastelsoft.etos2.rpc.RpcResponse;
 import com.eastelsoft.etos2.rpc.client.async.NettyRpcResponseFuture;
 
 /**
  */
 public class NettyRpcResponseFutureUtil {
-
+	private static Logger logger = LoggerFactory.getLogger(NettyRpcResponseFutureUtil.class);
 	private static final AttributeKey<Object> DEFAULT_ATTRIBUTE = AttributeKey
 			.valueOf("nettyRcpResponse");
 
@@ -81,7 +84,7 @@ public class NettyRpcResponseFutureUtil {
 		if (null != responseFuture) {
 			return responseFuture.done();
 		} else {
-			System.out.println("NettyRpcResponseFuture not found: "
+			logger.warn("NettyRpcResponseFuture not found: "
 					+ channel.localAddress());
 		}
 		return true;

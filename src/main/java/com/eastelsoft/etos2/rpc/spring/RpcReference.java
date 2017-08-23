@@ -1,5 +1,6 @@
 package com.eastelsoft.etos2.rpc.spring;
 
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -21,11 +22,11 @@ import com.eastelsoft.etos2.rpc.Consts.SerializeType;
 import com.eastelsoft.etos2.rpc.example.HelloWorld;
 import com.eastelsoft.etos2.rpc.proxy.CglibRpcProxy;
 import com.eastelsoft.etos2.rpc.proxy.JdkDynamicRpcProxy;
+import com.eastelsoft.etos2.rpc.proxy.MethodInfoCache;
 import com.eastelsoft.etos2.rpc.registry.Consumer;
 import com.eastelsoft.etos2.rpc.registry.Registry;
 import com.eastelsoft.etos2.rpc.serialize.RpcRespSerialize;
 import com.eastelsoft.etos2.rpc.tool.NetUtils;
-
 
 /**
  * 
@@ -52,6 +53,9 @@ public class RpcReference implements FactoryBean, InitializingBean,
 		serializeClasses
 				.put(SerializeType.PROTOSTUFF.value(),
 						com.eastelsoft.etos2.rpc.serialize.protostuff.ProtostuffRpcRespSerialize.class);
+		serializeClasses
+				.put(SerializeType.PROTOBUF.value(),
+						com.eastelsoft.etos2.rpc.serialize.protobuf.ProtobufRpcRespSerialize.class);
 	}
 
 	private ApplicationContext applicationContext;
@@ -131,6 +135,13 @@ public class RpcReference implements FactoryBean, InitializingBean,
 				System.err.println("Consumer " + interfaceName
 						+ " register to registry fail");
 			}
+			try {
+				MethodInfoCache.getInstance().register(interfaceName,
+						Class.forName(interfaceName));
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -194,20 +205,22 @@ public class RpcReference implements FactoryBean, InitializingBean,
 		return true;
 	}
 
-	public static void main(String[] args) {
-		AbstractXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "spring-bean-container-rpcclient.xml" });
-		final HelloWorld helloWorld = (HelloWorld) context.getBean("helloWorld");
+	private static void testP(final HelloWorld helloWorld, final int count, final int threadCount, final int payloadSize) {
 		long t1 = System.currentTimeMillis();
-		final int count = 1000;
-		int threadCount = 8;
 		final CountDownLatch finished = new CountDownLatch(count * threadCount);
+		StringBuffer payload = new StringBuffer();
+		int size = payloadSize;
+		while(size -- > 0) {
+			payload.append(size % 2 == 0 ? "0" : "1");
+		}
+		final String str = payload.toString();
 		for (int k = 0; k < threadCount; k++) {
 			new Thread() {
 				public void run() {
 					for (int i = 0; i < count; i++) {
 						try {
-							String data = helloWorld.sayHello("wtw:" + i);
-							if (!("Wellcome, " + "wtw:" + i).equals(data)) {
+							String data = helloWorld.sayHello(str + i);
+							if (!("Wellcome, " + str + i).equals(data)) {
 								System.err.println("rpc fail: " + data);
 							}
 						} catch (Exception e) {
@@ -226,8 +239,34 @@ public class RpcReference implements FactoryBean, InitializingBean,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(System.currentTimeMillis() - t1);
+		System.out.println(payloadSize + " bytes test: 耗时" + (System.currentTimeMillis() - t1) +"，qps"+ count*threadCount/((System.currentTimeMillis() - t1)/1000));
+	}
+	
+	public static void main(String[] args) {
+		AbstractXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "spring-bean-container-rpcclient.xml" });
+		final HelloWorld helloWorld = (HelloWorld) context
+				.getBean("helloWorld");
+		testP(helloWorld, 100000, 8 , 512);
+		testP(helloWorld, 100000, 8 , 1024);
+		testP(helloWorld, 100000, 8 , 2048);
+		testP(helloWorld, 100000, 8 , 4096);
+		testP(helloWorld, 100000, 8 , 8192);
+		testP(helloWorld, 10000000, 8 , 256);
 		System.out.println(helloWorld.add(1, -1));
 		System.out.println(helloWorld.list());
+		helloWorld.test1("str", 1);
+		helloWorld.test1(1, 2, "str");
+		System.out.println(helloWorld.test_0());
+		System.out.println(helloWorld.test_1());
+		System.out.println(helloWorld.test_2());
+		System.out.println(helloWorld.test_3());
+		System.out.println(helloWorld.test_4());
+		System.out.println(helloWorld.test_5());
+		System.out.println(helloWorld.test_6());
+		System.out.println(helloWorld.test_7());
+		System.out.println(helloWorld.test_list());
+		System.out.println(helloWorld.test_map());
+		System.out.println(Arrays.deepToString(helloWorld.test_ary_string()));
 	}
 }

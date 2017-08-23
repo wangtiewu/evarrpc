@@ -8,6 +8,8 @@ public class RpcResponse extends RpcMessage {
 	private String emsg;// 错误消息
 	private Object data;// 响应数据
 	private Throwable cause;// 异常
+	private String interfaceName;
+	private String method;
 
 	public RpcResponse() {
 	}
@@ -61,6 +63,22 @@ public class RpcResponse extends RpcMessage {
 
 	public void setCause(Throwable cause) {
 		this.cause = cause;
+	}
+
+	public String getInterfaceName() {
+		return interfaceName;
+	}
+
+	public void setInterfaceName(String interfaceName) {
+		this.interfaceName = interfaceName;
+	}
+
+	public String getMethod() {
+		return method;
+	}
+
+	public void setMethod(String method) {
+		this.method = method;
 	}
 
 	public String toString() {

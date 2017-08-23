@@ -1,6 +1,8 @@
 package com.eastelsoft.etos2.rpc.spring;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -9,11 +11,13 @@ import org.springframework.context.ApplicationListener;
 
 import com.eastelsoft.etos2.rpc.RpcRequestExecutor;
 import com.eastelsoft.etos2.rpc.RpcServer;
+import com.eastelsoft.etos2.rpc.proxy.MethodInfoCache;
 import com.eastelsoft.etos2.rpc.registry.Provider;
 import com.eastelsoft.etos2.rpc.registry.Registry;
 import com.eastelsoft.etos2.rpc.tool.NetUtils;
 
 public class RpcService implements ApplicationContextAware, ApplicationListener {
+	private static Logger logger = LoggerFactory.getLogger(RpcService.class);
 	private String interfaceName;
 	private String ref;
 	private String registry;
@@ -67,7 +71,7 @@ public class RpcService implements ApplicationContextAware, ApplicationListener 
 		RpcServer rpcServer = (RpcServer) applicationContext
 				.getBean(this.server);
 		if (rpcServer == null) {
-			System.err.println("server " + server + " not defined in spring");
+			logger.error("server " + server + " not defined in spring");
 			return;
 		}
 		RpcRequestExecutor.registerHandler(interfaceName,
@@ -76,7 +80,7 @@ public class RpcService implements ApplicationContextAware, ApplicationListener 
 			Registry registry2 = (Registry) applicationContext
 					.getBean(registry);
 			if (registry2 == null) {
-				System.err.println("registry " + registry
+				logger.error("registry " + registry
 						+ " not defined in spring");
 				return;
 			}
@@ -89,9 +93,11 @@ public class RpcService implements ApplicationContextAware, ApplicationListener 
 			}
 			provider.setServerAddress(host + ":" + rpcServer.getPort());
 			if (!registry2.registerProvider(provider)) {
-				System.err.println("Provivder " + interfaceName
+				logger.error("Provivder " + interfaceName
 						+ " register to registry fail");
 			}
 		}
+		MethodInfoCache.getInstance().register(interfaceName,
+				applicationContext.getBean(ref).getClass());
 	}
 }
