@@ -16,6 +16,7 @@ evarrpc is a java rpc framework.It's base on netty,spring,zookeeper.
 
 ## Usage with registry
 * Step-1,install Zookeeper
+
 Suppose zookeeper address is xx.xx.xx.xx:2181
 
 * Step-2,define a interface
@@ -38,7 +39,7 @@ public class HelloWorldImpl implements HelloWorld
 }
 ```
 
-* Step-4, define server size spring file, suppose file name is spring-rpcserver.xml
+* Step-4, define server's spring file, suppose file name is spring-rpcserver.xml
 ```Xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -85,7 +86,7 @@ public static void main(String[] args) {
 }
 ```
 
-* Step-6, define client size spring file, suppose file name is spring-rpcclient.xml
+* Step-6, define client's spring file, suppose file name is spring-rpcclient.xml
 ```Xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
