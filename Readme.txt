@@ -19,13 +19,16 @@ evarrpc is a java rpc framework.It's base on netty,spring,zookeeper.
 Suppose zookeeper address is xx.xx.xx.xx:2181
 
 * Step-2,define a interface
+```Java
 package test;
 public interface HelloWorld
 {
     String hello(String who);
 }
+```
 
 * Step-3,implements this HelloWorld interface
+```Java
 package test;
 public class HelloWorldImpl implements HelloWorld
 {
@@ -33,8 +36,10 @@ public class HelloWorldImpl implements HelloWorld
         return "Hello "+who;
     }
 }
+```
 
 * Step-4, define server size spring file, suppose file name is spring-rpcserver.xml
+```Xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
@@ -71,13 +76,17 @@ public class HelloWorldImpl implements HelloWorld
     <bean id="helloWorldTarget" class="test.HelloWorldImpl">
     </bean>
  </beans>
+```
 
 * Step-5, run server
+```Java
 public static void main(String[] args) {
     new ClassPathXmlApplicationContext(new String[]{"spring-rpcserver.xml"});
 }
+```
 
 * Step-6, define client size spring file, suppose file name is spring-rpcclient.xml
+```Xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
@@ -102,8 +111,10 @@ public static void main(String[] args) {
     <etosrpc:reference id="helloWorld" interfaceName="test.HelloWorld"
                         serializeType="protostuff" registry="registry" />
 </beans>
+```
 
 * Step-7, run client
+```Java
 public static void main(String[] args) {
     AbstractXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"spring-rpcclient.xml"});
     HelloWorld helloWorld = (HelloWorld) context
@@ -111,3 +122,4 @@ public static void main(String[] args) {
     System.out.println(helloWorld.hello("World"));
     // will print out "Hello World"
 }
+```
