@@ -128,3 +128,7 @@ public static void main(String[] args) {
 * protobuf use issue
 
 On Server and client machine,you need install google protobuf3,tested version is protobuf-3.4.0
+
+## Performance
+
+![Alt text]( ![Alt text](https://github.com/wangtiewu/evarrpc/raw/evarrpc-performance.png)
