@@ -14,13 +14,13 @@
 
     <bean id="registry" class="com.eastelsoft.etos2.rpc.registry.RegistryZookeeper" init-method="init" destroy-method="destroy">
         <property name="servers">
-            <value>10.0.65.105:2181,10.0.65.105:2182,10.0.65.105:2183</value>
-            <!-- <value>localhost:12181</value> -->
+            <value>10.0.65.105:2181,10.0.65.105:2182,10.0.65.105:2183</value>  
+            <!-- <value>127.0.0.1:12181</value> -->
         </property>
     </bean>
     
     <!-- serializeType: jdknative or protostuff or protobuf-->
 	<etosrpc:reference id="helloWorld" interfaceName="com.eastelsoft.etos2.rpc.example.HelloWorld"
-                        serializeType="protobuf" registry="registry" />
+                        serializeType="protostuff" registry="registry" />
 </beans>
 

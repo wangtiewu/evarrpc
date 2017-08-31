@@ -1,23 +1,29 @@
 package com.eastelsoft.etos2.rpc;
 
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.commons.beanutils.MethodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.eastelsoft.etos2.rpc.spring.RpcService;
-
 public class RpcRequestTask implements Runnable {
-	private static Logger logger = LoggerFactory.getLogger(RpcRequestTask.class);
+	private static Logger logger = LoggerFactory
+			.getLogger(RpcRequestTask.class);
 	private ChannelHandlerContext ctx;
 	private RpcRequest rpcRequest;
+	private Object handler;
 
 	public RpcRequestTask(ChannelHandlerContext arg0, RpcRequest rpcRequest) {
 		this.ctx = arg0;
 		this.rpcRequest = rpcRequest;
+	}
+
+	public void setHandler(Object handler) {
+		this.handler = handler;
+	}
+
+	public RpcRequest getRpcRequest() {
+		return rpcRequest;
 	}
 
 	@Override
@@ -36,20 +42,15 @@ public class RpcRequestTask implements Runnable {
 			response.setEcode(ErrorCode.ECODE_SERVICE_EXCEPTION);
 			response.setEmsg(t.toString());
 			response.setCause(t);
-			logger.error("RPC Server invoke error，"+t.getMessage(), t);
+			logger.error("RPC Server invoke error，" + t.getMessage(), t);
 		}
 		ctx.writeAndFlush(response);
 	}
 
 	private Object reflect(RpcRequest request) throws Throwable {
-		String service = request.getInterfaceName();
-		Object serviceBean = RpcServerStart.getContext().getBean(service);
 		String methodName = request.getMethod();
 		Object[] parameters = request.getParams();
-		return MethodUtils.invokeMethod(
-				serviceBean instanceof RpcService ? RpcServerStart.getContext()
-						.getBean((((RpcService) serviceBean).getRef()))
-						: serviceBean, methodName, parameters);
+		return MethodUtils.invokeMethod(handler, methodName, parameters);
 	}
 
 }

@@ -17,7 +17,7 @@
         </property>
     </bean>
     
-    <bean id="rpcServer" class="com.eastelsoft.etos2.rpc.RpcServer" init-method="init" destroy-method="destroy">
+    <bean id="rpcServer" class="com.eastelsoft.etos2.rpc.RpcServerNettyNIO" init-method="init" destroy-method="destroy">
         <property name="host">
             <value>0.0.0.0</value>
         </property>

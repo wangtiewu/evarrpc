@@ -11,10 +11,6 @@ public class RpcServerStart {
 	private static AbstractXmlApplicationContext context;
 	public static volatile boolean running = true;
 	
-	public static AbstractXmlApplicationContext getContext() {
-		return context;
-	}
-
 	public static void main(String[] args) {
 		context = new ClassPathXmlApplicationContext(new String[]{"spring-bean-container-rpc.xml"});
 	}

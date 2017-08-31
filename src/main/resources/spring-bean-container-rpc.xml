@@ -18,7 +18,7 @@
         </property>
     </bean>
     
-    <bean id="rpcServer" class="com.eastelsoft.etos2.rpc.RpcServer" init-method="init" destroy-method="destroy">
+    <bean id="rpcServer" class="com.eastelsoft.etos2.rpc.RpcServerNettyNIO" init-method="init" destroy-method="destroy">
         <property name="host">
             <value>0.0.0.0</value>
         </property>
@@ -27,7 +27,13 @@
         </property>
         <property name="serializeType">
             <!-- jdknative or protostuff or protobuf -->
-            <value>protobuf</value>
+            <value>protostuff</value>
+        </property>
+        <property name="useNativeEpoll">
+            <value>false</value>
+        </property>
+        <property name="userThreadPoolType">
+            <value>akka</value>
         </property>
     </bean>
     

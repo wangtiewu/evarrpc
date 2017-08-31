@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
-import com.eastelsoft.etos2.rpc.RpcRequestExecutor;
+import com.eastelsoft.etos2.rpc.RpcRequestExecutorJdk;
 import com.eastelsoft.etos2.rpc.RpcServer;
 import com.eastelsoft.etos2.rpc.proxy.MethodInfoCache;
 import com.eastelsoft.etos2.rpc.registry.Provider;
@@ -74,7 +74,7 @@ public class RpcService implements ApplicationContextAware, ApplicationListener 
 			logger.error("server " + server + " not defined in spring");
 			return;
 		}
-		RpcRequestExecutor.registerHandler(interfaceName,
+		rpcServer.registerHandler(interfaceName,
 				applicationContext.getBean(ref));
 		if (!StringUtils.isEmpty(this.registry)) {
 			Registry registry2 = (Registry) applicationContext

@@ -7,10 +7,12 @@ import io.netty.channel.ChannelPipeline;
 import com.eastelsoft.etos2.rpc.serialize.RpcReqSerialize;
 
 public class RpcReqInitializer extends ChannelInitializer<Channel> {
+	private RpcServer rpcServer;
 	private RpcReqSerialize<ChannelPipeline> rpcReqSerialize;
 
-	public RpcReqInitializer(
+	public RpcReqInitializer(RpcServer rpcServer, 
 			RpcReqSerialize<ChannelPipeline> rpcReqSerialize) {
+		this.rpcServer = rpcServer;
 		this.rpcReqSerialize = rpcReqSerialize;
 	}
 
@@ -19,7 +21,7 @@ public class RpcReqInitializer extends ChannelInitializer<Channel> {
 		// TODO Auto-generated method stub
 		ChannelPipeline pipeline = arg0.pipeline();
 		rpcReqSerialize.initChannel(pipeline);
-		pipeline.addLast(new RpcReqHandler());
+		pipeline.addLast(new RpcReqHandler(rpcServer));
 	}
 
 }
